@@ -1,157 +1,248 @@
-<?xml version="1.0" encoding="utf-8"?>
-<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/main"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
-    tools:context=".Song">
+    android:background="#15183A"
+    android:backgroundTint="#15183A"
+    android:orientation="horizontal"
+    android:weightSum="2">
 
-    <!-- Album Art -->
-    <ImageView
-        android:id="@+id/albumArt"
-        android:layout_width="300dp"
-        android:layout_height="45dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginTop="50dp"
-        android:layout_marginEnd="50dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintHeight_default="percent"
-        app:layout_constraintHeight_percent="0.45"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent"
-        app:srcCompat="@drawable/download" />
-
-    <!-- Song Title -->
-    <TextView
-        android:id="@+id/songTitle"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:gravity="center"
-        android:text="Make You Mine"
-        android:textColor="#FFFFFF"
-        android:textSize="18sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/albumArt" />
-
-    <!-- Artist Name -->
-
-    <!-- Progress Bar -->
-    <SeekBar
-        android:id="@+id/progressBar"
+    <!-- Media Player Section -->
+    <FrameLayout
+        android:id="@+id/media_player_section"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="30dp"
-        android:background="#020000"
-        android:backgroundTint="#120101"
-        android:max="100"
-        android:progress="50"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/songTitle" />
+        android:layout_height="match_parent"
+        android:layout_weight="2"
+        android:background="#FF15183A"
+        android:backgroundTint="#15183A"
+        android:gravity="center">
 
-    <!-- Play/Pause Button -->
+        <androidx.cardview.widget.CardView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_margin="16dp"
+            app:cardBackgroundColor="#5442395F"
+            app:cardCornerRadius="16dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:padding="16dp"
+                android:weightSum="4">
+
+                <!-- Song Title -->
+                <ImageView
+                    android:id="@+id/song_image"
+                    android:layout_width="166dp"
+                    android:layout_height="132dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/dualipa" />
+
+                <TextView
+                    android:id="@+id/song_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:text="New Rules"
+                    android:textColor="#FFFFFF"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
+                <!-- SeekBar & Song Duration -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:layout_weight="1"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:weightSum="4">
+
+                    <!-- Song Duration Text -->
+                    <SeekBar
+                        android:id="@+id/seek_bar"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="4"
+                        android:progressTint="#FFFFFF"
+                        android:thumbTint="#FFFFFF" />
+
+                    <TextView
+                        android:id="@+id/song_duration"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginEnd="8dp"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:text="00:00"
+                        android:textColor="#FFFFFF"
+                        android:textSize="12sp" />
+
+                    <!-- SeekBar -->
+                </LinearLayout>
+
+                <!-- Media Control Buttons -->
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="horizontal"
+                    android:weightSum="5">
+
+                    <!-- Shuffle Button on the left -->
+                    <ImageButton
+                        android:id="@+id/btn_shuffle"
+                        android:layout_width="105dp"
+                        android:layout_height="48dp"
+                        android:layout_marginEnd="16dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#00FFFFFF"
+                        android:contentDescription="Shuffle"
+                        android:padding="8dp"
+                        android:src="@drawable/shuffle"
+                        app:tint="#FFFFFF" />
+
+                    <!-- Previous Button (Left) -->
+
+                    <!-- Play/Pause Button (Center) -->
+                    <ImageButton
+                        android:id="@+id/btn_prev"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#00FFFFFF"
+                        android:contentDescription="Previous"
+                        android:padding="5dp"
+                        android:src="@drawable/prev"
+                        app:tint="#FFFFFF" />
+
+                    <ImageButton
+                        android:id="@+id/btn_play_pause"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#00FFFFFF"
+                        android:contentDescription="Play/Pause"
+                        android:padding="5dp"
+                        android:src="@drawable/play_button"
+                        app:tint="#FFFFFF" />
+
+                    <!-- Next Button (Right) -->
+                    <ImageButton
+                        android:id="@+id/btn_next"
+                        android:layout_width="48dp"
+                        android:layout_height="48dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#00FFFFFF"
+                        android:contentDescription="Next"
+                        android:padding="5dp"
+                        android:src="@drawable/next"
+                        app:tint="#FFFFFF" />
+
+
+                    <!-- Favorite Button on the right -->
+                    <ImageButton
+                        android:id="@+id/btn_fav"
+                        android:layout_width="105dp"
+                        android:layout_height="48dp"
+                        android:layout_marginStart="16dp"
+                        android:layout_weight="1"
+                        android:backgroundTint="#00FFFCFC"
+                        android:contentDescription="fav"
+                        android:padding="8dp"
+                        android:src="@drawable/heart"
+                        app:tint="#FFFFFF" />
+                </LinearLayout>
+
+            </LinearLayout>
+        </androidx.cardview.widget.CardView>
+    </FrameLayout>
+
+    <!-- Song List Section -->
     <ImageButton
-        android:id="@+id/btnPlayPause"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginTop="24dp"
-        android:background="?android:selectableItemBackgroundBorderless"
-        android:src="@drawable/pause"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/songDuration" />
-
-    <!-- Song Duration -->
-    <TextView
-        android:id="@+id/songDuration"
-        android:layout_width="wrap_content"
+        android:id="@+id/toggle_button"
+        android:layout_width="35dp"
         android:layout_height="wrap_content"
-        android:text="0:46 / 3:19"
-        android:textColor="#B0B0B0"
-        android:textSize="12sp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/progressBar" />
+        android:layout_margin="16dp"
+        android:backgroundTint="#00FFFFFF"
+        android:contentDescription="toggle"
+        android:src="@drawable/left" />
 
-    <!-- Tabs -->
-    <LinearLayout
+    <FrameLayout
+        android:id="@+id/song_list_section"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="50dp"
-        android:orientation="horizontal"
-        android:padding="16dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/btnPlayPause">
+        android:layout_height="match_parent"
+        android:layout_weight="0"
+        android:background="@drawable/rounded_frame_background"
+        android:visibility="visible">
 
-        <!-- Tab Buttons -->
-        <Button
-            android:id="@+id/tabSource"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?android:selectableItemBackground"
-            android:text="SOURCE"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp" />
+        <!-- Vertical container for the playlist section -->
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="vertical"
+            android:padding="16dp"
+            android:weightSum="3">
 
-        <Button
-            android:id="@+id/tabArtist"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?android:selectableItemBackground"
-            android:text="ARTIST"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp" />
+            <!-- Container for the button and text -->
 
-        <Button
-            android:id="@+id/tabAlbum"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?android:selectableItemBackground"
-            android:text="ALBUM"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp" />
+            <!-- Image Section -->
 
-        <Button
-            android:id="@+id/tabSong"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1"
-            android:background="?android:selectableItemBackground"
-            android:text="SONG"
-            android:textColor="#FFFFFF"
-            android:textSize="12sp" />
+            <!-- Button on the left -->
+            <ImageButton
+                android:id="@+id/close_button"
+                android:layout_width="12dp"
+                android:layout_height="12dp"
+                android:layout_marginStart="0dp"
+                android:layout_marginTop="0dp"
+                android:layout_marginEnd="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginBottom="5dp"
+                android:background="@drawable/rounded_image_background"
+                android:backgroundTint="#00FFFFFF"
+                android:contentDescription="toggle"
+                android:src="@drawable/close" />
 
-    </LinearLayout>
+            <!-- Playlist text centered -->
+            <TextView
+                android:id="@+id/playlist_text"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="center_vertical|start"
+                android:layout_marginStart="10dp"
+                android:text="Song Playlist"
+                android:textColor="#000"
+                android:textSize="20sp"
+                android:textStyle="bold" />
 
-    <ImageButton
-        android:id="@+id/btnPrev"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginStart="50dp"
-        android:layout_marginEnd="60dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintEnd_toStartOf="@+id/btnPlayPause"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="@+id/btnPlayPause"
-        app:srcCompat="@drawable/previous" />
+            <ImageView
+                android:id="@+id/musicImage"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_gravity="center"
+                android:layout_weight="1"
+                android:background="@drawable/rounded_image_background"
+                android:scaleType="centerCrop"
+                android:src="@drawable/dualipa" />
 
-    <ImageButton
-        android:id="@+id/btnNext"
-        android:layout_width="64dp"
-        android:layout_height="64dp"
-        android:layout_marginStart="60dp"
-        android:layout_marginEnd="50dp"
-        android:background="@android:color/transparent"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toEndOf="@+id/btnPlayPause"
-        app:layout_constraintTop_toTopOf="@+id/btnPlayPause"
-        app:srcCompat="@drawable/next" />
+            <!-- RecyclerView for the song list -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/song_list_recycler_view"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1"
+                android:padding="16dp"
+                android:scrollbars="vertical" />
+        </LinearLayout>
+    </FrameLayout>
 
-</androidx.constraintlayout.widget.ConstraintLayout>
+</LinearLayout>
+

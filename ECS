@@ -1,0 +1,23 @@
+[33mcommit 779d8ecc0404bd2b75ce48f8a927a646cfe52506[m[33m ([m[1;36mHEAD -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m, [m[1;31morigin/HAL[m[33m)[m
+Author: doaa6 <doaaelryan976@gmail.com>
+Date:   Sun Dec 1 09:40:12 2024 +0200
+
+    HAL Implementation
+
+[33mcommit 78b172333b9dc3507519e34cefde2c4dd02ca028[m[33m ([m[1;31morigin/app-dev[m[33m)[m
+Author: doaa6 <doaaelryan976@gmail.com>
+Date:   Fri Nov 29 16:08:34 2024 +0200
+
+    Create the app
+
+[33mcommit 0cfff763a8b29b279e9981959ff010cf56b30c2a[m
+Author: Shada Ashraf <shadaashraf1222@gmail.com>
+Date:   Wed Nov 27 09:51:04 2024 +0200
+
+    Update README.md
+
+[33mcommit 07c0cc89fc88d5afb42631fc5b4ed6b677e088b7[m
+Author: Shada Ashraf <shadaashraf1222@gmail.com>
+Date:   Thu Nov 21 19:14:27 2024 +0200
+
+    Initial commit

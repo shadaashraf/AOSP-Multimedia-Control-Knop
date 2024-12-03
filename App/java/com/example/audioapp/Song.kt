@@ -43,13 +43,24 @@ class Song : AppCompatActivity() {
         songs = getSongsFromFolder(folderPath)
 
         // UI components
-        seekBar = findViewById(R.id.progressBar)
-        songTime = findViewById(R.id.songDuration)
-        songTitle = findViewById(R.id.songTitle)
-        val btnPlayPause = findViewById<ImageButton>(R.id.btnPlayPause)
+        seekBar = findViewById(R.id.seek_bar)
+        songTime = findViewById(R.id.song_duration)
+        songTitle = findViewById(R.id.song_title)
+        val btnPlayPause = findViewById<ImageButton>(R.id.btn_play_pause)
         val btnNext = findViewById<ImageButton>(R.id.btnNext)
-        val btnPrev = findViewById<ImageButton>(R.id.btnPrev)
+        val btnPrev = findViewById<ImageButton>(R.id.btn_prev)
+        mediaPlayerSection = findViewById(R.id.media_player_section);
+        songListSection = findViewById(R.id.song_list_section);
+        ImageButton toggleButton = findViewById(R.id.toggle_button);
+         toggleButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                toggleSongList();
+            }
+        });
 
+        // Initially, show only the media player
+        showMediaPlayerOnly();
         if (songs.isNotEmpty()) {
             // Play the first song on startup
             playSong(songs[currentSongIndex])
@@ -91,7 +102,37 @@ class Song : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
     }
+	
+    private void showMediaPlayerOnly() {
+        // Adjust weights to show only the media player
+        LinearLayout.LayoutParams mediaParams = (LinearLayout.LayoutParams) mediaPlayerSection.getLayoutParams();
+        mediaParams.weight = 2; // Full width
+        mediaPlayerSection.setLayoutParams(mediaParams);
 
+        LinearLayout.LayoutParams songListParams = (LinearLayout.LayoutParams) songListSection.getLayoutParams();
+        songListParams.weight = 0; // Hidden
+        songListSection.setLayoutParams(songListParams);
+    }
+
+    private void showSplitScreen() {
+        // Adjust weights to split screen
+        LinearLayout.LayoutParams mediaParams = (LinearLayout.LayoutParams) mediaPlayerSection.getLayoutParams();
+        mediaParams.weight = 1; // Half width
+        mediaPlayerSection.setLayoutParams(mediaParams);
+
+        LinearLayout.LayoutParams songListParams = (LinearLayout.LayoutParams) songListSection.getLayoutParams();
+        songListParams.weight = 1; // Half width
+        songListSection.setLayoutParams(songListParams);
+    }
+
+    private void toggleSongList() {
+        if (isSongListVisible) {
+            showMediaPlayerOnly();
+        } else {
+            showSplitScreen();
+        }
+        isSongListVisible = !isSongListVisible;
+    }
     private fun getSongsFromFolder(folderPath: String): List<Song> {
         val folder = File(folderPath)
         if (folder.exists()) {
@@ -123,7 +164,7 @@ class Song : AppCompatActivity() {
         mediaPlayer?.let {
             seekBar?.progress = it.currentPosition
             songTime?.text = formatTime(it.currentPosition) + " / " + formatTime(it.duration)
-            if (it.isPlaying) {
+            if (it.isPlaying) {`
                 handler.postDelayed({ updateSeekBar() }, 1000)
             }
         }
