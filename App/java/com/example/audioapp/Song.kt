@@ -51,14 +51,22 @@ class Song : AppCompatActivity() {
         val btnPrev = findViewById<ImageButton>(R.id.btn_prev)
         mediaPlayerSection = findViewById(R.id.media_player_section);
         songListSection = findViewById(R.id.song_list_section);
-        ImageButton toggleButton = findViewById(R.id.toggle_button);
-         toggleButton.setOnClickListener(new View.OnClickListener() {
+         toggleButton = findViewById(R.id.toggle_button);
+          closeButton = findViewById(R.id.close_button);
+
+        toggleButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 toggleSongList();
             }
         });
 
+        closeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                closeSongList();
+            }
+        });
         // Initially, show only the media player
         showMediaPlayerOnly();
         if (songs.isNotEmpty()) {
@@ -102,7 +110,7 @@ class Song : AppCompatActivity() {
             override fun onStopTrackingTouch(seekBar: SeekBar?) {}
         })
     }
-	
+
     private void showMediaPlayerOnly() {
         // Adjust weights to show only the media player
         LinearLayout.LayoutParams mediaParams = (LinearLayout.LayoutParams) mediaPlayerSection.getLayoutParams();
@@ -112,6 +120,8 @@ class Song : AppCompatActivity() {
         LinearLayout.LayoutParams songListParams = (LinearLayout.LayoutParams) songListSection.getLayoutParams();
         songListParams.weight = 0; // Hidden
         songListSection.setLayoutParams(songListParams);
+
+        toggleButton.setVisibility(View.VISIBLE); // Show toggle button when media player is alone
     }
 
     private void showSplitScreen() {
@@ -123,6 +133,8 @@ class Song : AppCompatActivity() {
         LinearLayout.LayoutParams songListParams = (LinearLayout.LayoutParams) songListSection.getLayoutParams();
         songListParams.weight = 1; // Half width
         songListSection.setLayoutParams(songListParams);
+
+        toggleButton.setVisibility(View.GONE); // Hide toggle button when in split view
     }
 
     private void toggleSongList() {
@@ -132,6 +144,12 @@ class Song : AppCompatActivity() {
             showSplitScreen();
         }
         isSongListVisible = !isSongListVisible;
+    }
+
+    private void closeSongList() {
+        // Hide the song list and show only the media player
+        showMediaPlayerOnly();
+        isSongListVisible = false; // Ensure the state reflects that the song list is hidden
     }
     private fun getSongsFromFolder(folderPath: String): List<Song> {
         val folder = File(folderPath)
