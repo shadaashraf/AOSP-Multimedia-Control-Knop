@@ -1,0 +1,4 @@
+java_import {
+    name: "mp3agic",
+    jars: ["mp3agic-0.9.1.jar"],
+}

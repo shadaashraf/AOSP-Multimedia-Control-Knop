@@ -6,19 +6,23 @@ import android.media.MediaPlayer
 import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
+import android.view.View
 import android.widget.ImageButton
 import android.widget.SeekBar
 import android.widget.TextView
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
+import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
-import com.example.audioapp.model.Song
+import com.example.audioapp.model.Songs
 import java.io.File
 import java.util.concurrent.TimeUnit
+import com.bumptech.glide.Glide
+import com.mpatric.mp3agic.Mp3File
+import android.graphics.Bitmap
+import android.widget.ImageView
+
 
 class Song : AppCompatActivity() {
     private var seekBar: SeekBar? = null
@@ -26,8 +30,16 @@ class Song : AppCompatActivity() {
     private var songTitle: TextView? = null
     private var mediaPlayer: MediaPlayer? = null
     private var currentSongIndex = 0
-    private var songs: List<Song> = emptyList()
+    private var songs: List<Songs> = emptyList()
     private val handler = Handler(Looper.getMainLooper())
+    private var isSongListVisible = false
+
+    private var mediaPlayerSection: FrameLayout? = null
+    private var songListSection: FrameLayout? = null
+    private var toggleButton: ImageButton? = null
+    private var closeButton: ImageButton? = null
+    private var btnPlayPause: ImageButton? = null
+    private var songimg: ImageView? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -39,36 +51,28 @@ class Song : AppCompatActivity() {
         }
 
         // Set up folder path and retrieve songs
-        val folderPath = "/storage/emulated/0/Songs/"
-        songs = getSongsFromFolder(folderPath)
+        songs = intent.getSerializableExtra("songs") as ArrayList<Songs>
+        currentSongIndex = intent.getIntExtra("currentSongIndex", 0)
 
         // UI components
         seekBar = findViewById(R.id.seek_bar)
         songTime = findViewById(R.id.song_duration)
         songTitle = findViewById(R.id.song_title)
-        val btnPlayPause = findViewById<ImageButton>(R.id.btn_play_pause)
+        btnPlayPause = findViewById<ImageButton>(R.id.btn_play_pause)
         val btnNext = findViewById<ImageButton>(R.id.btnNext)
         val btnPrev = findViewById<ImageButton>(R.id.btn_prev)
-        mediaPlayerSection = findViewById(R.id.media_player_section);
-        songListSection = findViewById(R.id.song_list_section);
-         toggleButton = findViewById(R.id.toggle_button);
-          closeButton = findViewById(R.id.close_button);
+        mediaPlayerSection = findViewById(R.id.media_player_section)
+        songListSection = findViewById(R.id.song_list_section)
+        toggleButton = findViewById(R.id.btnPlayPause)
+        closeButton = findViewById(R.id.close_button)
+        songimg = findViewById(R.id.song_image)
 
-        toggleButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                toggleSongList();
-            }
-        });
+        toggleButton?.setOnClickListener { toggleSongList() }
+        closeButton?.setOnClickListener { closeSongList() }
 
-        closeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                closeSongList();
-            }
-        });
         // Initially, show only the media player
-        showMediaPlayerOnly();
+        showMediaPlayerOnly()
+
         if (songs.isNotEmpty()) {
             // Play the first song on startup
             playSong(songs[currentSongIndex])
@@ -79,10 +83,10 @@ class Song : AppCompatActivity() {
         btnPlayPause?.setOnClickListener {
             if (mediaPlayer?.isPlaying == true) {
                 mediaPlayer?.pause()
-                btnPlayPause?.setImageResource(R.drawable.play_buttton)
+                btnPlayPause?.setImageResource(R.drawable.play)
             } else {
                 mediaPlayer?.start()
-                btnPlayPause?.setImageResource(R.drawable.pause)
+                btnPlayPause?.setImageResource(R.drawable.pause_button)
                 updateSeekBar()
             }
         }
@@ -90,13 +94,13 @@ class Song : AppCompatActivity() {
         btnNext?.setOnClickListener {
             currentSongIndex = (currentSongIndex + 1) % songs.size
             playSong(songs[currentSongIndex])
-            btnPlayPause?.setImageResource(R.drawable.pause)
+            btnPlayPause?.setImageResource(R.drawable.pause_button)
         }
 
         btnPrev?.setOnClickListener {
             currentSongIndex = if (currentSongIndex == 0) songs.size - 1 else currentSongIndex - 1
             playSong(songs[currentSongIndex])
-            btnPlayPause?.setImageResource(R.drawable.pause)
+            btnPlayPause?.setImageResource(R.drawable.pause_button)
         }
 
         seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
@@ -111,58 +115,60 @@ class Song : AppCompatActivity() {
         })
     }
 
-    private void showMediaPlayerOnly() {
-        // Adjust weights to show only the media player
-        LinearLayout.LayoutParams mediaParams = (LinearLayout.LayoutParams) mediaPlayerSection.getLayoutParams();
-        mediaParams.weight = 2; // Full width
-        mediaPlayerSection.setLayoutParams(mediaParams);
+    private fun showMediaPlayerOnly() {
+        // Cast to FrameLayout.LayoutParams and update width/height
+        val mediaParams = mediaPlayerSection?.layoutParams as? FrameLayout.LayoutParams
+        mediaParams?.let {
+            it.width = 2 // Full width for media player
+            mediaParams.height = FrameLayout.LayoutParams.WRAP_CONTENT // Adjust as needed
+            mediaPlayerSection?.layoutParams = it
+        }
 
-        LinearLayout.LayoutParams songListParams = (LinearLayout.LayoutParams) songListSection.getLayoutParams();
-        songListParams.weight = 0; // Hidden
-        songListSection.setLayoutParams(songListParams);
+        val songListParams = songListSection?.layoutParams as? FrameLayout.LayoutParams
+        songListParams?.let {
+            it.width = 0 // Hide song list (width set to 0)
+            songListParams.height = FrameLayout.LayoutParams.WRAP_CONTENT // Adjust as needed
+            songListSection?.layoutParams = it
+        }
 
-        toggleButton.setVisibility(View.VISIBLE); // Show toggle button when media player is alone
+        toggleButton?.visibility = View.VISIBLE // Show toggle button when media player is alone
     }
 
-    private void showSplitScreen() {
-        // Adjust weights to split screen
-        LinearLayout.LayoutParams mediaParams = (LinearLayout.LayoutParams) mediaPlayerSection.getLayoutParams();
-        mediaParams.weight = 1; // Half width
-        mediaPlayerSection.setLayoutParams(mediaParams);
+    private fun showSplitScreen() {
+        // Adjust layout for split screen, where both sections share space
+        val mediaParams = mediaPlayerSection?.layoutParams as? FrameLayout.LayoutParams
+        mediaParams?.let {
+            it.width = 1 // Half width
+            mediaParams.height = FrameLayout.LayoutParams.MATCH_PARENT // Adjust as needed
+            mediaPlayerSection?.layoutParams = it
+        }
 
-        LinearLayout.LayoutParams songListParams = (LinearLayout.LayoutParams) songListSection.getLayoutParams();
-        songListParams.weight = 1; // Half width
-        songListSection.setLayoutParams(songListParams);
+        val songListParams = songListSection?.layoutParams as? FrameLayout.LayoutParams
+        songListParams?.let {
+            it.width = 1 // Other half width
+            songListParams.height = FrameLayout.LayoutParams.MATCH_PARENT // Adjust as needed
+            songListSection?.layoutParams = it
+        }
 
-        toggleButton.setVisibility(View.GONE); // Hide toggle button when in split view
+        toggleButton?.visibility = View.GONE // Hide toggle button when in split view
     }
 
-    private void toggleSongList() {
+    private fun toggleSongList() {
         if (isSongListVisible) {
-            showMediaPlayerOnly();
+            showMediaPlayerOnly()
         } else {
-            showSplitScreen();
+            showSplitScreen()
         }
-        isSongListVisible = !isSongListVisible;
+        isSongListVisible = !isSongListVisible
     }
 
-    private void closeSongList() {
+    private fun closeSongList() {
         // Hide the song list and show only the media player
-        showMediaPlayerOnly();
-        isSongListVisible = false; // Ensure the state reflects that the song list is hidden
-    }
-    private fun getSongsFromFolder(folderPath: String): List<Song> {
-        val folder = File(folderPath)
-        if (folder.exists()) {
-            val songFiles = folder.listFiles { file -> file.extension == "mp3" }
-            return songFiles?.map { file -> Song(file.nameWithoutExtension, file.absolutePath) } ?: emptyList()
-        } else {
-            Toast.makeText(this, "Directory not found: $folderPath", Toast.LENGTH_SHORT).show()
-            return emptyList()
-        }
+        showMediaPlayerOnly()
+        isSongListVisible = false // Ensure the state reflects that the song list is hidden
     }
 
-    private fun playSong(song: Song) {
+    private fun playSong(song: Songs) {
         mediaPlayer?.stop()
         mediaPlayer?.release()
 
@@ -174,6 +180,15 @@ class Song : AppCompatActivity() {
 
         // Update UI with the current song details
         songTitle?.text = song.title
+        /*Glide.with(this)
+            .load(song?.albumArtPath ?: R.drawable.download)  // Load file or use placeholder
+            .into(songimg)*/
+        songimg?.let {
+        Glide.with(this)
+            .load(song?.albumArtPath ?: R.drawable.download)
+            .into(it)
+        }
+        btnPlayPause?.setImageResource(R.drawable.pause_button)
         seekBar?.max = mediaPlayer?.duration ?: 0
         updateSeekBar()
     }
@@ -182,7 +197,7 @@ class Song : AppCompatActivity() {
         mediaPlayer?.let {
             seekBar?.progress = it.currentPosition
             songTime?.text = formatTime(it.currentPosition) + " / " + formatTime(it.duration)
-            if (it.isPlaying) {`
+            if (it.isPlaying) {
                 handler.postDelayed({ updateSeekBar() }, 1000)
             }
         }
@@ -192,6 +207,17 @@ class Song : AppCompatActivity() {
         val minutes = TimeUnit.MILLISECONDS.toMinutes(milliseconds.toLong())
         val seconds = TimeUnit.MILLISECONDS.toSeconds(milliseconds.toLong()) % 60
         return String.format("%d:%02d", minutes, seconds)
+    }
+
+    private fun getSongsFromFolder(folderPath: String): List<Songs> {
+        val folder = File(folderPath)
+        if (folder.exists()) {
+            val songFiles = folder.listFiles { file -> file.extension == "mp3" }
+            return songFiles?.map { file -> Songs(file.nameWithoutExtension, file.absolutePath) } ?: emptyList()
+        } else {
+            Toast.makeText(this, "Directory not found: $folderPath", Toast.LENGTH_SHORT).show()
+            return emptyList()
+        }
     }
 
     override fun onDestroy() {

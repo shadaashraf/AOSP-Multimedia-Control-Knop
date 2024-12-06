@@ -13,10 +13,12 @@ android_app{
     "androidx-constraintlayout_constraintlayout",
     "androidx.appcompat_appcompat",
     "com.google.android.material_material",
+    "glide",
+    "mp3agic",
     ],
-
+    
     platform_apis: true,
-    privileged: true,
+   // privileged: true,
     certificate: "platform",
 
     optimize: {

@@ -54,16 +54,27 @@
         app:layout_constraintTop_toBottomOf="@id/songTitle" />
 
     <!-- Play/Pause Button -->
-    <ImageButton
+    <!--ImageButton
         android:id="@+id/btnPlayPause"
         android:layout_width="64dp"
         android:layout_height="64dp"
         android:layout_marginTop="24dp"
         android:background="?android:selectableItemBackgroundBorderless"
-        android:src="@drawable/pause"
+        android:src="@drawable/pause_button"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/songDuration" />
+        app:layout_constraintTop_toBottomOf="@id/songDuration" /-->
+
+    <ImageButton
+        android:id="@+id/btnPlayPause"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="12dp"
+        android:background="@android:color/transparent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/songDuration"
+        app:srcCompat="@drawable/pause_button" />
 
     <!-- Song Duration -->
     <TextView
@@ -140,7 +151,7 @@
         app:layout_constraintEnd_toStartOf="@+id/btnPlayPause"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="@+id/btnPlayPause"
-        app:srcCompat="@drawable/previous" />
+        app:srcCompat="@drawable/prev_button" />
 
     <ImageButton
         android:id="@+id/btnNext"
@@ -152,6 +163,6 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toEndOf="@+id/btnPlayPause"
         app:layout_constraintTop_toTopOf="@+id/btnPlayPause"
-        app:srcCompat="@drawable/next" />
+        app:srcCompat="@drawable/next_button" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

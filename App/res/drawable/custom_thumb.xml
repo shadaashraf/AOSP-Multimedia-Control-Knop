@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Background of the SeekBar (unfilled portion) -->
+    <item android:id="@android:id/background">
+        <shape>
+            <size android:height="10dp" /> <!-- Adjust the height -->
+            <solid android:color="#A9A9A9" /> <!-- Gray color for unfilled portion -->
+        </shape>
+    </item>
+
+    <!-- Progress of the SeekBar (filled portion) -->
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape>
+                <size android:height="10dp" /> <!-- Same height as background -->
+                <solid android:color="@color/white" /> <!-- Orange color for filled portion -->
+            </shape>
+        </clip>
+    </item>
+</layer-list>
