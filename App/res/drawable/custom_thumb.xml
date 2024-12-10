@@ -3,8 +3,9 @@
     <!-- Background of the SeekBar (unfilled portion) -->
     <item android:id="@android:id/background">
         <shape>
-            <size android:height="10dp" /> <!-- Adjust the height -->
-            <solid android:color="#A9A9A9" /> <!-- Gray color for unfilled portion -->
+            <solid android:color="@android:color/transparent" /> <!-- Transparent background -->
+            <corners android:radius="10dp" /> <!-- Rounded corners -->
+            <stroke android:color="@android:color/darker_gray" android:width="2dp" /> <!-- Gray border -->
         </shape>
     </item>
 
@@ -12,9 +13,29 @@
     <item android:id="@android:id/progress">
         <clip>
             <shape>
-                <size android:height="10dp" /> <!-- Same height as background -->
-                <solid android:color="@color/white" /> <!-- Orange color for filled portion -->
+                <solid android:color="#EBEBEB" /> <!-- Transparent gray color for progress -->
+                <corners android:radius="10dp" /> <!-- Rounded corners -->
             </shape>
         </clip>
     </item>
 </layer-list>
+
+
+<!--?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <item android:id="@android:id/background">
+        <shape>
+            <size android:height="10dp" /> 
+            <solid android:color="#A9A9A9" /> 
+        </shape>
+    </item>
+
+    <item android:id="@android:id/progress">
+        <clip>
+            <shape>
+                <size android:height="10dp" /> 
+                <solid android:color="@color/white" /> 
+            </shape>
+        </clip>
+    </item>
+</layer-list-->

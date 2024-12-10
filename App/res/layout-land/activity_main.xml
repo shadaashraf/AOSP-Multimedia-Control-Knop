@@ -94,7 +94,7 @@
                 app:layout_constraintBottom_toBottomOf="parent"
                 app:layout_constraintStart_toEndOf="@+id/btnPrev"
                 app:layout_constraintTop_toTopOf="parent"
-                app:srcCompat="@drawable/pause_button" />
+                app:srcCompat="@drawable/play" />
 
             <ImageButton
                 android:id="@+id/btnNext"

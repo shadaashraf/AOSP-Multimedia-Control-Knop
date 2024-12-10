@@ -1,5 +1,7 @@
 package com.example.audioapp
 
+import android.Manifest
+import android.content.pm.PackageManager
 import android.car.Car
 import android.car.hardware.CarPropertyValue
 import android.car.hardware.property.CarPropertyManager
@@ -21,6 +23,8 @@ import java.util.concurrent.Executors
 import java.util.concurrent.TimeUnit
 import android.car.media.CarAudioManager
 import android.widget.ImageView
+import androidx.core.content.ContextCompat
+import androidx.core.app.ActivityCompat
 
 
 import android.graphics.BitmapFactory
@@ -29,6 +33,12 @@ import com.mpatric.mp3agic.Mp3File
 import java.io.FileOutputStream
 import android.graphics.Bitmap
 import android.content.Intent
+
+import android.content.ComponentName
+import android.content.Context
+import android.content.ServiceConnection
+import android.os.IBinder
+
 
 import VolumeDialogFragment
 
@@ -57,6 +67,10 @@ class MainActivity : AppCompatActivity(), SongAdapter.OnSongClickListener {
     private var counter: Int? = null
     private var flag: Int? = null
     private var songAdapter: SongAdapter? = null
+    companion object {
+        var sliderDialog = false
+    }
+    
 
     // Property IDs
     private val volumeUpPropertyId = 591397127
@@ -68,12 +82,31 @@ class MainActivity : AppCompatActivity(), SongAdapter.OnSongClickListener {
     private val joePropertyId = 591397145
     private lateinit var mCarAudioManager: CarAudioManager
 
+    private var isBound = false
+    private val serviceConnection = object : ServiceConnection {
+        override fun onServiceConnected(name: ComponentName?, service: IBinder?) {
+            isBound = true
+            // Your service connection logic here
+        }
+
+        override fun onServiceDisconnected(name: ComponentName?) {
+            isBound = false
+            // Handle disconnection logic
+        }
+    }
+
  ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////   
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
-        initializeCarProperties()
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, arrayOf(Manifest.permission.READ_EXTERNAL_STORAGE), 1)
+        }
+
+        car = Car.createCar(this)
+            carPropertyManager = car?.getCarManager(Car.PROPERTY_SERVICE) as CarPropertyManager
+            mCarAudioManager = car?.getCarManager(Car.AUDIO_SERVICE) as CarAudioManager
 
         val dialog = VolumeDialogFragment()
 
@@ -85,8 +118,7 @@ class MainActivity : AppCompatActivity(), SongAdapter.OnSongClickListener {
     
         // Set up folder path and retrieve songs
         //val folderPath = "/system/product/media/audio/Songs"
-        val folderPath = "/system/product/media/audio/songs"
-        songs = getSongsFromFolder(folderPath)
+        songs = getSongs()
 
         songs.forEach { song ->
             val albumArtFile = ensureAlbumArtFile(song, cacheDir)
@@ -109,10 +141,36 @@ class MainActivity : AppCompatActivity(), SongAdapter.OnSongClickListener {
         songAdapter = SongAdapter(songs, this, this)
         recyclerView?.adapter = songAdapter
 
+        songTitle?.text = songs[0].title
+        Glide.with(this)
+            .load(songs[0]?.albumArtPath ?: R.drawable.download)  // Load file or use placeholder
+            .into(songimg)
+
         if (songs.isNotEmpty()) {
-            playSong(songs[currentSongIndex]) // Play the first song on startup
+            //playSong(songs[currentSongIndex]) // Play the first song on startup
+            val currentIndex = intent.getIntExtra("currentSongIndex", -1)
+            val isPlaying = intent.getBooleanExtra("isPlaying", false)
+            val currentPosition = intent.getIntExtra("currentPosition", 0)
+
+            if (currentIndex != -1 && isPlaying) {
+                // Resume the song from the current index
+                currentSongIndex = currentIndex
+                playSong(songs[currentIndex])
+                 mediaPlayer?.seekTo(currentPosition) // Seek to the position if needed
+                //mediaPlayer?.start() // Start playing
+                //playSong(songs[currentIndex])
+            }
+            else if (currentIndex != -1 && !isPlaying) {
+                // Resume the song from the current index
+                currentSongIndex = currentIndex
+                playSong(songs[currentIndex])
+                togglePlayPause()
+                 mediaPlayer?.seekTo(currentPosition) // Seek to the position if needed
+                //mediaPlayer?.start() // Start playing
+                //playSong(songs[currentIndex])
+            }
+            
         } else {
-            Toast.makeText(this, "No songs found in the folder", Toast.LENGTH_SHORT).show()
         }
 
         btnPlayPause?.setOnClickListener {
@@ -127,6 +185,7 @@ class MainActivity : AppCompatActivity(), SongAdapter.OnSongClickListener {
             goToPreviousSong()
         }
 
+
         /*seekBar?.setOnSeekBarChangeListener(object : SeekBar.OnSeekBarChangeListener {
             override fun onProgressChanged(seekBar: SeekBar, progress: Int, fromUser: Boolean) {
                 if (fromUser) {
@@ -138,32 +197,59 @@ class MainActivity : AppCompatActivity(), SongAdapter.OnSongClickListener {
             override fun onStopTrackingTouch(seekBar: SeekBar) {}
         })*/
     }
+ private fun getSongs(): List<Songs> {
+    val usbMountPoint = "/mnt/media_rw/"
+    val defaultFolderPath = "/system/product/media/audio/songs"
+    val usbFiles: Array<File>?
+    var folderPath: String = defaultFolderPath // Declare folderPath here once
 
-private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
-    try {
-        // Retrieve the property value
-        val carPropertyValue: CarPropertyValue<*> = carPropertyManager?.getProperty(
-            Integer::class.java, propertyId, 0
-        ) ?: throw IllegalArgumentException("Failed to retrieve property value")
+    // Check if USB directory exists
+    val usbDir = File(usbMountPoint)
+    if (usbDir.exists() && usbDir.isDirectory) {
+        usbFiles = usbDir.listFiles()
 
-        // Check and safely cast the value to Int
-        val value = carPropertyValue.value?.let {
-            // Ensure it is of type Int
-            if (it is Int) it else null
+        if (usbFiles != null && usbFiles.isNotEmpty()) {
+            // Log the files to see what's in the directory
+            usbFiles.forEach { file ->
+                Log.d("USB_Mount", "File found: ${file.absolutePath}")
+            }
+            val usbFolder = usbFiles.firstOrNull { it.isDirectory }
+            folderPath = usbFolder?.absolutePath ?: defaultFolderPath
+        } else {
+            // If no files are found in the USB directory, fallback to default folder
         }
-
-        Log.d("CAR", "Property $propertyId value: $value")
-        action(value) // Call the action with the value
-    } catch (e: Exception) {
-        Log.e("CAR", "Error monitoring propertyyyyyyyyyyyyyyyy $propertyId", e)
+    } else {
+        // If USB directory does not exist (i.e., it was unmounted), fallback to default folder
+        usbFiles = null
     }
+
+    return getSongsFromFolder(folderPath)
 }
+
+
+    private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
+        try {
+            // Retrieve the property value
+            val carPropertyValue: CarPropertyValue<*> = carPropertyManager?.getProperty(
+                Integer::class.java, propertyId, 0
+            ) ?: throw IllegalArgumentException("Failed to retrieve property value")
+
+            // Check and safely cast the value to Int
+            val value = carPropertyValue.value?.let {
+                // Ensure it is of type Int
+                if (it is Int) it else null
+            }
+
+            Log.d("CAR", "Property $propertyId value: $value")
+            action(value) // Call the action with the value
+        } catch (e: Exception) {
+            Log.e("CAR", "Error monitoring propertyyyyyyyyyyyyyyyy $propertyId", e)
+        }
+    }
 
     private fun initializeCarProperties() {
         try {
-            car = Car.createCar(this)
-            carPropertyManager = car?.getCarManager(Car.PROPERTY_SERVICE) as CarPropertyManager
-            mCarAudioManager = car?.getCarManager(Car.AUDIO_SERVICE) as CarAudioManager
+            
             executorService.execute {
                 while (isMonitoring) {
                     monitorProperty(volumeUpPropertyId) { value ->
@@ -173,14 +259,37 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
                         if (value == 1) runOnUiThread { adjustVolume(0) } // Volume Down
                     }
                     monitorProperty(rightPropertyId) { value ->
-                        if (value == 1) runOnUiThread { goToNextSong()} // Next Song
+                        if (value == 1) {
+                            if(sliderDialog) {
+                                runOnUiThread { ImageSliderDialogFragment.goToNextSong()}
+                            } 
+                            else {
+                                runOnUiThread { goToNextSong()} // Next Song
+                            }
+                        }
+                        
                     }
                     //goToNextSong()
                     monitorProperty(leftPropertyId) { value ->
-                        if (value == 1) runOnUiThread { goToPreviousSong() } // Previous Song
+                        if (value == 1) {
+                            if(sliderDialog) {
+                                runOnUiThread { ImageSliderDialogFragment.goToPreviousSong()}
+                            } 
+                            else {
+                                runOnUiThread { goToPreviousSong() } // Previous Song
+                            }
+                        }
                     }
                    monitorProperty(okPropertyId) { value ->
-                        if (value == 1) runOnUiThread { togglePlayPause() } // Play/Pause
+                        if (value == 1) {
+                            if(sliderDialog) {
+                                runOnUiThread {(supportFragmentManager.findFragmentByTag("ImageSliderDialogFragment") as? ImageSliderDialogFragment)
+                                    ?.onAppClick(ImageSliderDialogFragment.currentSongIndex)}
+                            }
+                            else {
+                                runOnUiThread { togglePlayPause() } // Play/Pause
+                            }
+                        }
                     }
                     monitorProperty(rotaryPropertyId) { value ->
                         //value?.let { runOnUiThread { adjustVolume(it) } } // Rotary Input
@@ -191,13 +300,19 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
                             counter = flag
                         }
                          if((value ?: 0) == 5005){
-                            if (movedSongIndex == currentSongIndex) {
-                                runOnUiThread { togglePlayPause() }
+                            if(sliderDialog) {
+                                (supportFragmentManager.findFragmentByTag("ImageSliderDialogFragment") as? ImageSliderDialogFragment)
+                                    ?.onAppClick(ImageSliderDialogFragment.currentSongIndex)
                             }
                             else {
-                                currentSongIndex = movedSongIndex
-                                //runOnUiThread { playSong(songs[currentSongIndex]) }
-                                runOnUiThread { onSongClick(currentSongIndex) }
+                                if (movedSongIndex == currentSongIndex) {
+                                    runOnUiThread { togglePlayPause() }
+                                }
+                                else {
+                                    currentSongIndex = movedSongIndex
+                                    //runOnUiThread { playSong(songs[currentSongIndex]) }
+                                    runOnUiThread { onSongClick(currentSongIndex) }
+                                }
                             }
                             flag = counter
                             counter = 0
@@ -207,9 +322,15 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
                                 
                                 counter++
                             }*/
+                            
                             counter = value
                             flag = counter
-                            runOnUiThread { moveToNextSong()} 
+                            if(sliderDialog) {
+                                runOnUiThread { ImageSliderDialogFragment.goToNextSong()}
+                            } 
+                            else {
+                                runOnUiThread { moveToNextSong()} 
+                            }
                             
                         }
                         else if((value ?: 0) < (counter ?: 0)){
@@ -219,7 +340,12 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
                             }*/
                             counter = value
                             flag = counter
-                            runOnUiThread { moveToPreviousSong()} 
+                            if(sliderDialog) {
+                                runOnUiThread { ImageSliderDialogFragment.goToPreviousSong()}
+                            } 
+                            else {
+                                runOnUiThread { moveToPreviousSong()} 
+                            }
                         }
                          
                         //value?.let { runOnUiThread { performCustomAction(it) } } // Custom Action
@@ -300,7 +426,6 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
                 Songs(file.nameWithoutExtension, file.absolutePath, formattedDuration)
             } ?: emptyList()
         } else {
-            Toast.makeText(this, "Directory not found: $folderPath", Toast.LENGTH_SHORT).show()
             return emptyList()
         }
     }
@@ -315,6 +440,9 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
             setDataSource(song.path)
             prepare()
             start()
+            setOnCompletionListener {
+                goToNextSong()
+            }
         }
 
         recyclerView?.scrollToPosition(currentSongIndex)
@@ -335,6 +463,9 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
             if (it.isPlaying) {
                 handler.postDelayed({ updateSeekBar() }, 1000)
             }
+            if(it.duration - it.currentPosition <= 1000) {
+                goToNextSong()
+            }
         }
     }
 
@@ -354,13 +485,54 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
         startActivity(intent)
     }
 
+    /*override fun onResume() {
+        super.onResume()
+        // Resume monitoring thread when the activity comes back to the foreground
+        isMonitoring = true
+        initializeCarProperties()
+    }*/
+
+    override fun onResume() {
+        super.onResume()
+        isMonitoring = true
+        initializeCarProperties()
+        if (isBound) {
+            unbindService(serviceConnection)
+            isBound = false
+        }
+        val intent = Intent(this, SliderService::class.java)
+        stopService(intent)
+    }
+
+
+    override fun onPause() {
+        super.onPause()
+        // Stop the monitoring thread when the activity is paused
+        val intent = Intent(this, SliderService::class.java)
+        startService(intent)
+        bindService(intent, serviceConnection, Context.BIND_AUTO_CREATE)
+        isMonitoring = false
+    }
+
+    override fun onStop() {
+        super.onStop()
+        // Release resources when the activity is stopped
+        mediaPlayer?.release()
+        mediaPlayer = null
+    }
+
     override fun onDestroy() {
         super.onDestroy()
+        
         isMonitoring = false
         executorService.shutdown()
         mediaPlayer?.release()
         handler.removeCallbacksAndMessages(null)
         car?.disconnect()
+         if (isBound) {
+            unbindService(serviceConnection)
+            isBound = false
+        }
     }
    private fun adjustVolume(gpioState: Int) {
     Thread {
@@ -383,7 +555,6 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
         } catch (e: Exception) {
             Log.e("MainActivity", "Error adjusting volume with CarAudioManager", e)
             runOnUiThread {
-                Toast.makeText(this@MainActivity, "Error adjusting volume", Toast.LENGTH_SHORT).show()
             }
         }
     }.start()
@@ -391,10 +562,52 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
   
     
 }
-  private fun modeSheetOn(){
+  /*private fun modeSheetOn(){
         val bottomSheet = IconDialogFragment()
         bottomSheet.show(supportFragmentManager, "iconBottomSheet")
+    }*/
+
+    private fun modeSheetOn(){
+        /*val sliderItems = listOf(
+            SliderItem(R.drawable.download3, "com.example.audioapp"),
+            SliderItem(R.drawable.images1, "com.android.car.settings"),
+            SliderItem(R.drawable.images2, "com.android.car.radio"),
+            SliderItem(R.drawable.download2,"com.android.car.messenger"),
+            SliderItem(R.drawable.download1,"com.android.car.dialer")
+        )
+        
+        val dialogFragment = ImageSliderDialogFragment.newInstance(sliderItems)
+        dialogFragment.show(supportFragmentManager, "ImageSliderDialogFragment")*/
+        val fragmentManager = supportFragmentManager
+        val existingFragment = fragmentManager.findFragmentByTag("ImageSliderDialogFragment")
+
+        if (existingFragment != null && existingFragment.isVisible) {
+            // If the fragment is visible, dismiss it
+            (existingFragment as? ImageSliderDialogFragment)?.dismiss()
+        } else {
+            // If the fragment is not visible, show it
+            val sliderItems = listOf(
+                SliderItem(R.drawable.music, "com.example.audioapp"),
+                SliderItem(R.drawable.settings, "com.android.car.settings"),
+                SliderItem(R.drawable.radio, "com.android.car.radio"),
+                SliderItem(R.drawable.sms, "com.android.car.messenger"),
+                SliderItem(R.drawable.app, "com.android.car.dialer")
+            )
+
+            /*
+            val sliderItems = listOf(
+                SliderItem(R.drawable.ic_launcher_background, "com.example.audioapp"),
+                SliderItem(R.drawable.settings, "com.android.car.settings"),
+                SliderItem(R.drawable.radio, "com.android.car.radio"),
+                SliderItem(R.drawable.sms, "com.android.car.messenger"),
+                SliderItem(R.drawable.dialer, "com.android.car.dialer")
+            ) */
+
+            val dialogFragment = ImageSliderDialogFragment.newInstance(sliderItems)
+            dialogFragment.show(fragmentManager, "ImageSliderDialogFragment")
+        }
     }
+    
 
     fun ensureAlbumArtFile(song: Songs, cacheDir: File): File? {
         val albumArtFile = getAlbumArtFile(song, cacheDir)
@@ -429,4 +642,5 @@ private fun monitorProperty(propertyId: Int, action: (value: Int?) -> Unit) {
     fun getAlbumArtFile(song: Songs, cacheDir: File): File {
         return File(cacheDir, "${song.title.hashCode()}.jpg")
     }
+    
 }

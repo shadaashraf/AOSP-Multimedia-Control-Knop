@@ -3,6 +3,14 @@ android_app{
     srcs: [
         "java/**/*.kt",
     ],
+
+    overrides: [
+        "Launcher2",
+        "Launcher3",
+        "Launcher3QuickStep",
+        "CarLauncher"
+    ],
+    
     resource_dirs: ["res"],
     manifest: "AndroidManifest.xml",
     libs: [
@@ -15,6 +23,7 @@ android_app{
     "com.google.android.material_material",
     "glide",
     "mp3agic",
+    "androidx.viewpager2_viewpager2",
     ],
     
     platform_apis: true,
