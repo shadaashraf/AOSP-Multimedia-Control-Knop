@@ -7,6 +7,23 @@
     android:orientation="horizontal"
     android:weightSum="2">
 
+    <ImageButton
+        android:id="@+id/btn_back"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="16dp"
+        android:backgroundTint="#00FFFFFF"
+        android:contentDescription="toggle"
+        android:src="@drawable/back-button" />
+
+        <!--ImageButton
+            android:id="@+id/btn_back"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:background="@android:color/transparent"
+            android:src="@drawable/back-button" /-->
+
     <!-- Media Player Section -->
     <FrameLayout
         android:id="@+id/media_player_section"
@@ -33,14 +50,23 @@
                 android:weightSum="4">
 
                 <!-- Song Title -->
-                <ImageView
+                <!--ImageView
                     android:id="@+id/song_image"
                     android:layout_width="166dp"
                     android:layout_height="132dp"
                     android:layout_gravity="center"
                     android:layout_weight="1"
                     android:scaleType="centerInside"
-                    android:src="@drawable/dualipa" />
+                    android:src="@drawable/download" /-->
+
+                <ImageView
+                    android:id="@+id/song_image"
+                    android:layout_width="700dp"
+                    android:layout_height="330dp"
+                    android:layout_gravity="center"
+                    android:layout_weight="1"
+                    android:scaleType="fitXY"
+                    android:src="@drawable/download" />
 
                 <TextView
                     android:id="@+id/song_title"
@@ -51,7 +77,7 @@
                     android:gravity="center"
                     android:text="New Rules"
                     android:textColor="#FFFFFF"
-                    android:textSize="16sp"
+                    android:textSize="25sp"
                     android:textStyle="bold" />
 
                 <!-- SeekBar & Song Duration -->
@@ -82,7 +108,7 @@
                         android:gravity="end"
                         android:text="00:00"
                         android:textColor="#FFFFFF"
-                        android:textSize="12sp" />
+                        android:textSize="22sp" />
 
                     <!-- SeekBar -->
                 </LinearLayout>
@@ -124,16 +150,7 @@
                         android:src="@drawable/prev_button"
                         app:tint="#FFFFFF" />
 
-                    <!--ImageButton
-                        android:id="@+id/btn_play_pause"
-                        android:layout_width="48dp"
-                        android:layout_height="48dp"
-                        android:layout_weight="1"
-                        android:backgroundTint="#00FFFFFF"
-                        android:contentDescription="Play/Pause"
-                        android:padding="5dp"
-                        android:src="@drawable/pause_button"
-                        app:tint="#FFFFFF" /-->
+
 
                         <ImageButton
                         android:id="@+id/btn_play_pause"
@@ -176,14 +193,14 @@
     </FrameLayout>
 
     <!-- Song List Section -->
-    <ImageButton
+    <!--ImageButton
         android:id="@+id/toggle_button"
         android:layout_width="35dp"
         android:layout_height="wrap_content"
         android:layout_margin="16dp"
         android:backgroundTint="#00FFFFFF"
         android:contentDescription="toggle"
-        android:src="@drawable/left" />
+        android:src="@drawable/left" /-->
 
     <FrameLayout
         android:id="@+id/song_list_section"
@@ -240,7 +257,7 @@
                 android:layout_weight="1"
                 android:background="@drawable/rounded_image_background"
                 android:scaleType="centerCrop"
-                android:src="@drawable/dualipa" />
+                android:src="@drawable/download" />
 
             <!-- RecyclerView for the song list -->
             <androidx.recyclerview.widget.RecyclerView

@@ -9,7 +9,7 @@
 
     <!-- Volume Level Label -->
 
-    <SeekBar
+    <!--SeekBar
         android:id="@+id/volumeSlider"
         android:layout_width="250dp"
         android:layout_height="697dp"
@@ -19,7 +19,24 @@
         android:progress="50"
         android:progressDrawable="@drawable/custom_thumb"
         android:thumb="@drawable/seekbar_thumb"
-        android:rotation="270" />
+        android:rotation="270" /-->
+
+        <SeekBar
+        android:id="@+id/volumeSlider"
+        android:layout_width="250dp"
+        android:layout_height="697dp"
+        android:layout_alignParentEnd="true"
+        android:layout_marginEnd="-91dp"
+        android:max="100"
+        android:progress="50"
+        android:progressDrawable="@drawable/custom_thumb"
+        android:thumb="@null"
+        android:thumbOffset="0dp"
+        android:focusable="false"
+    android:clickable="false"
+    android:rotation="270" />
+
+
 
     <TextView
         android:id="@+id/volumeLevelLabel"
